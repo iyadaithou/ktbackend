@@ -1,0 +1,167 @@
+/**
+ * Authentication middleware
+ */
+const jwt = require('jsonwebtoken');
+const supabase = require('../config/supabase');
+
+/**
+ * Middleware to authenticate JWT tokens
+ */
+const authenticate = async (req, res, next) => {
+  try {
+    // Get token from header
+    const authHeader = req.headers.authorization;
+    console.log('Auth middleware - Request headers:', JSON.stringify({
+      authorization: authHeader ? `${authHeader.substring(0, 15)}...` : 'none',
+      path: req.path,
+      method: req.method
+    }, null, 2));
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.warn('Authentication failed: No Bearer token provided');
+      
+      // Special case for getUserByClerkId - allow for frontend admin verification
+      if (req.path.startsWith('/users/clerk/')) {
+        console.log('Allowing access to /users/clerk/ endpoint without auth for admin role verification');
+        req.user = { role: 'guest' }; // Set limited guest access
+        return next();
+      }
+      
+      return res.status(401).json({ status: 'error', message: 'Authentication required' });
+    }
+    
+    // Extract token
+    const token = authHeader.split(' ')[1];
+    
+    try {
+      // Allow Clerk JWT tokens or our custom tokens
+      if (token.startsWith('clerk.')) {
+        console.log('Processing Clerk token');
+        // For Clerk tokens, create a limited user object
+        // Later we'll properly verify this with Clerk's SDK
+        req.user = { 
+          tokenType: 'clerk',
+          token: token,
+          role: 'clerk-user' // Limited role until verified
+        };
+        
+        // Continue to verify through regular database checks
+      } else {
+        // Verify our own JWT token
+        console.log('Processing custom JWT token');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = {
+          id: decoded.userId,
+          email: decoded.email,
+          role: decoded.role,
+          tokenType: 'jwt'
+        };
+      }
+    } catch (tokenError) {
+      console.error('Token verification error:', tokenError.message);
+      return res.status(401).json({ status: 'error', message: 'Invalid token: ' + tokenError.message });
+    }
+    
+    // For all authenticated routes, check if user exists in database
+    try {
+      let query;
+      
+      // Check for guest role from earlier special case
+      if (req.user.role === 'guest') {
+        // Skip database check for guest access
+        return next();
+      }
+      
+      // For Clerk tokens, try to get the user using the Clerk ID from the path
+      if (req.user.tokenType === 'clerk' && req.params.clerkId) {
+        query = supabase
+          .from('users')
+          .select('id, email, role')
+          .eq('clerk_id', req.params.clerkId)
+          .single();
+      } else {
+        // For regular JWT tokens, lookup by the user ID
+        query = supabase
+          .from('users')
+          .select('id, email, role')
+          .eq('id', req.user.id)
+          .single();
+      }
+      
+      const { data: user, error } = await query;
+      
+      if (error) {
+        console.error('Database error during auth check:', error);
+        // Allow special endpoints to proceed even with database errors
+        if (req.path.startsWith('/users/clerk/')) {
+          console.log('Allowing /users/clerk/ access despite database error');
+          return next();
+        }
+        throw error;
+      }
+      
+      if (!user) {
+        console.warn('User not found in database');
+        // Special case for clerk ID endpoint
+        if (req.path.startsWith('/users/clerk/')) {
+          console.log('Allowing /users/clerk/ access even though user not found');
+          return next();
+        }
+        return res.status(401).json({ status: 'error', message: 'User not found or token invalid' });
+      }
+      
+      // Attach user to request
+      req.user = {
+        ...req.user,
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        dbRecord: true // Flag indicating we found them in the database
+      };
+      
+      console.log('User authenticated:', JSON.stringify({
+        id: user.id,
+        email: user.email,
+        role: user.role
+      }, null, 2));
+      
+      next();
+    } catch (error) {
+      console.error('Error during database auth check:', error);
+      next(error);
+    }
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ status: 'error', message: 'Invalid token' });
+    }
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ status: 'error', message: 'Token expired' });
+    }
+    console.error('Authentication middleware error:', error);
+    next(error);
+  }
+};
+
+/**
+ * Role-based access control middleware
+ * @param {string[]} allowedRoles - Array of roles allowed to access the route
+ */
+const authorize = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ status: 'error', message: 'Authentication required' });
+    }
+    
+    if (allowedRoles.includes(req.user.role)) {
+      next();
+    } else {
+      res.status(403).json({ status: 'error', message: 'Access denied. Insufficient permissions' });
+    }
+  };
+};
+
+module.exports = {
+  authenticate,
+  authenticateToken: authenticate, // For backwards compatibility
+  authorize
+};

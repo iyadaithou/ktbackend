@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  
+  "builds": [
+    {
+      "src": "src/index.js",
+      "use": "@vercel/node@3"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/src/index.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Vary", "value": "Origin" },
+        { "key": "Access-Control-Allow-Origin", "value": "https://www.pythagoras.com" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, Accept, X-Requested-With" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" }
+      ]
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

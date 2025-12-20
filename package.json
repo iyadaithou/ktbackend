@@ -1,0 +1,62 @@
+{
+  "name": "backend-pythagoras",
+  "_deploy_trigger": "2025-01-15",
+  "version": "1.0.0",
+  "engines": {
+    "node": "20.x"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint src/",
+    "vercel-build": "npm install",
+    "convert-markdown": "node scripts/convert-markdown.js",
+    "init-bucket": "node scripts/init-bucket.js",
+    "backfill-programs": "node scripts/backfill-programs.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Backend API for Pythagoras platform",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.956.0",
+    "@aws-sdk/client-dynamodb": "^3.956.0",
+    "@aws-sdk/client-s3": "^3.956.0",
+    "@aws-sdk/credential-provider-env": "^3.956.0",
+    "@aws-sdk/credential-provider-node": "^3.956.0",
+    "@aws-sdk/lib-dynamodb": "^3.956.0",
+    "@clerk/clerk-sdk-node": "^5.1.6",
+    "@getbrevo/brevo": "^2.5.0",
+    "@langchain/community": "^0.3.23",
+    "@langchain/openai": "^0.3.8",
+    "@langchain/textsplitters": "^0.0.3",
+    "@opensearch-project/opensearch": "^3.5.1",
+    "@sendgrid/mail": "^8.1.4",
+    "@supabase/supabase-js": "^2.49.1",
+    "aws4": "^1.13.2",
+    "bcrypt": "^5.1.1",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "googleapis": "^140.0.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "marked": "^12.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.2",
+    "openai": "^4.56.0",
+    "pdf-parse": "^1.1.1",
+    "stripe": "^16.6.0",
+    "svix": "^1.61.2",
+    "twilio": "^5.3.6",
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^9.21.0",
+    "nodemon": "^3.1.9"
+  }
+}
