@@ -171,7 +171,7 @@ router.post('/mcq', async (req, res) => {
       explanation: mcq.explanation,
     });
 
-    // Record asked question to reduce repetition
+    // Record asked question to reduce repetition and show in Recent Questions
     try {
       await recordQuestionAsked({
         userId,
@@ -179,7 +179,10 @@ router.post('/mcq', async (req, res) => {
         questionId: saved.questionId,
         question: mcq.question,
       });
-    } catch (_) {}
+      console.log(`Recorded question ${saved.questionId} for user ${userId}`);
+    } catch (recErr) {
+      console.error('Failed to record question (non-fatal):', recErr?.message || recErr);
+    }
 
     // For demo: return question + choices + question_id; keep answer server-side.
     return res.json({
