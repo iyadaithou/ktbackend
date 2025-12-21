@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 });
 
 // Import routes with guard to avoid import-time crashes (isolate each import)
-let userRoutes, webhookRoutes, roleRoutes, representativesRoutes, aiRoutes, ragRoutes, uploadRoutes, aiAdminRoutes, storageRoutes, knowledgeStateRoutes, communityRoutes, tutorRoutes, supportRoutes, emailRoutes, smsRoutes, pipedriveRoutes, recommendersPublicRoutes, notificationRoutes, supervisorRoutes, directOfferRoutes;
+let userRoutes, webhookRoutes, roleRoutes, representativesRoutes, aiRoutes, ragRoutes, uploadRoutes, aiAdminRoutes, storageRoutes, knowledgeStateRoutes, communityRoutes, tutorRoutes, supportRoutes, emailRoutes, recommendersPublicRoutes, notificationRoutes;
 let knowledgeBaseRoutes;
 try { webhookRoutes = require('./routes/webhooks'); console.log('Loaded routes: /api/webhooks'); } catch (e) { console.error('Failed to load /api/webhooks:', e?.message || e); }
 try { userRoutes = require('./routes/users'); console.log('Loaded routes: /api/users'); } catch (e) { console.error('Failed to load /api/users:', e?.message || e); }
@@ -71,12 +71,8 @@ try { communityRoutes = require('./routes/community'); console.log('Loaded route
 try { tutorRoutes = require('./routes/tutor'); console.log('Loaded routes: /api/tutor'); } catch (e) { console.error('Failed to load /api/tutor:', e?.message || e); }
 try { supportRoutes = require('./routes/support'); console.log('Loaded routes: /api/support'); } catch (e) { console.error('Failed to load /api/support:', e?.message || e); }
 try { emailRoutes = require('./routes/email'); console.log('Loaded routes: /api/email'); } catch (e) { console.error('Failed to load /api/email:', e?.message || e); }
-try { smsRoutes = require('./routes/sms'); console.log('Loaded routes: /api/sms'); } catch (e) { console.error('Failed to load /api/sms:', e?.message || e); }
-try { pipedriveRoutes = require('./routes/pipedrive'); console.log('Loaded routes: /api/pipedrive'); } catch (e) { console.error('Failed to load /api/pipedrive:', e?.message || e); }
 try { recommendersPublicRoutes = require('./routes/recommenders_public'); console.log('Loaded routes: /api/recommenders/public'); } catch (e) { console.error('Failed to load /api/recommenders/public:', e?.message || e); }
 try { notificationRoutes = require('./routes/notifications'); console.log('Loaded routes: /api/notifications'); } catch (e) { console.error('Failed to load /api/notifications:', e?.message || e); }
-try { supervisorRoutes = require('./routes/supervisors'); console.log('Loaded routes: /api/supervisors'); } catch (e) { console.error('Failed to load /api/supervisors:', e?.message || e); }
-try { directOfferRoutes = require('./routes/directOffers'); console.log('Loaded routes: /api/direct-offers'); } catch (e) { console.error('Failed to load /api/direct-offers:', e?.message || e); }
 
 // Use webhook routes BEFORE body parser (webhooks need raw body)
 if (webhookRoutes) app.use('/api/webhooks', webhookRoutes);
@@ -125,12 +121,8 @@ if (communityRoutes) app.use('/api/community', communityRoutes);
 if (tutorRoutes) app.use('/api/tutor', tutorRoutes);
 if (supportRoutes) app.use('/api/support', supportRoutes);
 if (emailRoutes) app.use('/api/email', emailRoutes);
-if (smsRoutes) app.use('/api/sms', smsRoutes);
-if (pipedriveRoutes) app.use('/api/pipedrive', pipedriveRoutes);
 if (recommendersPublicRoutes) app.use('/api/recommenders/public', recommendersPublicRoutes);
 if (notificationRoutes) app.use('/api/notifications', notificationRoutes);
-if (supervisorRoutes) app.use('/api/supervisors', supervisorRoutes);
-if (directOfferRoutes) app.use('/api/direct-offers', directOfferRoutes);
 
 // removed: ambassadors fallback endpoints (feature deleted)
 
